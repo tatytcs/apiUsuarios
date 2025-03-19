@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import br.com.cotiinformatica.components.JwtTokenComponent;
 import br.com.cotiinformatica.components.SHA256Component;
 import br.com.cotiinformatica.dtos.AutenticarUsuarioRequestDto;
 import br.com.cotiinformatica.dtos.AutenticarUsuarioResponseDto;
@@ -26,6 +27,8 @@ public class UsuarioService {
 	PerfilRepository perfilRepository;
 	@Autowired
 	SHA256Component sha256Component;
+	@Autowired
+	JwtTokenComponent jwtTokenComponent;
 
 	/*
 	 * Método para realizar o cadastro dos usuários no sistema
@@ -57,8 +60,27 @@ public class UsuarioService {
 	// método para autenticar um usuário (recebe um AutenticarUsuarioRequestDTO e
 	// retorna um AutenticarUsuarioResponseDTO)
 	public AutenticarUsuarioResponseDto autenticarUsuario(AutenticarUsuarioRequestDto request) {
-		// TODO
-		return null;
+		
+		//buscar o usuário no banco de dados através do email e senha informados
+		var usuario = usuarioRepository.findByEmailAndSenha(request.getEmail(), sha256Component.encrypt(request.getSenha()));
+		
+		//verificar se o usuário foi encontrado
+		if (usuario == null) {
+
+			throw new IllegalArgumentException("Acesso negado. Usuário não encontrado.");
+		}
+		
+		//usuário encontrado
+		//preparar o objeto de resposta
+		var response = new AutenticarUsuarioResponseDto();
+		
+		response.setId(usuario.getId());
+		response.setNome(usuario.getNome());
+		response.setEmail(usuario.getEmail());
+		response.setPerfil(usuario.getPerfil().getNome());
+		response.setToken(jwtTokenComponent.getToken(usuario));
+		
+		return response;
 	}
 
 }

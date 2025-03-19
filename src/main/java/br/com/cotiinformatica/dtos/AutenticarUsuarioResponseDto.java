@@ -10,9 +10,7 @@ public class AutenticarUsuarioResponseDto {
 	private UUID id;
 	private String nome;
 	private String email;
-	private String perfil;
-	private Instant dataAcesso;
-	private Instant dataExpiracao;
+	private String perfil;	
 	private String token;
 
 }
